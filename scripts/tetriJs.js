@@ -30,9 +30,9 @@ class PieceComponent {
 }
 
 class Piece {
-    pieceList = [];
+    pieceComponents = [];
     drawPiece = function(ctx, boardInfo){
-        this.pieceList.forEach(p => p.drawPieceComponent(ctx, boardInfo))
+        this.pieceComponents.forEach(p => p.drawPieceComponent(ctx, boardInfo))
     }
 }
 
@@ -60,18 +60,25 @@ for(let i = 0; i < 10; i++){
     p.posX= i;
     p.posY = 0;
     p.color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
-    activePiece.pieceList.push(p);
+    activePiece.pieceComponents.push(p);
 }
+activePiece.pieceComponents[3].posY = -2;
 
-canvas.addEventListener('click', e => tick(), false);
+canvas.addEventListener('click', e => {tick(); stateLog()}, false);
 stateLog();
 
 //===============================================================
 
 function tick(){
     drawBackground(context);
-    activePiece.pieceList.forEach(p => p.posY += 1);
-    activePiece.pieceList.forEach(p => p.drawPieceComponent(context, boardInfo));
+    movePiece(activePiece);
+    activePiece.drawPiece(context, boardInfo)
+}
+
+function movePiece(piece){
+    //check floor collision. if no collision, increment up.
+    if(! piece.pieceComponents.some(pc => pc.posY >= boardInfo.pieceHeight - 1))
+        piece.pieceComponents.forEach(pc => pc.posY += 1);
 }
 
 function drawBackground(ctx){
@@ -87,7 +94,7 @@ function stateLog(){
     logString += (`Board PieceHeight = ${boardInfo.pieceHeight}\n`);
     logString += (`Board PieceWidth = ${boardInfo.pieceWidth}\n`);
     logString += ("End Log\n");
-    console.log(logString)
+    console.log(logString);
 }
 
 
