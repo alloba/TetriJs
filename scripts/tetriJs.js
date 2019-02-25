@@ -31,9 +31,20 @@ class PieceComponent {
 
 class Piece {
     pieceComponents = [];
+    centerPoint = {x:0, y:0};
     drawPiece = function(ctx, boardInfo){
         this.pieceComponents.forEach(p => p.drawPieceComponent(ctx, boardInfo))
-    }
+    };
+
+    moveDown = function(boardInfo){
+        if(! this.pieceComponents.some(pc => pc.posY >= boardInfo.pieceHeight - 1)){
+            this.pieceComponents.forEach(pc => pc.posY += 1);
+            this.centerPoint.y += 1;
+        }
+    };
+
+    //to allow rotation, need to phrase the piece components in terms of a 2d array, instead of a list.
+    //then i can also had a center point defined or something, to calculate rotation
 }
 
 
@@ -71,14 +82,8 @@ stateLog();
 
 function tick(){
     drawBackground(context);
-    movePiece(activePiece);
+    activePiece.moveDown(boardInfo);
     activePiece.drawPiece(context, boardInfo)
-}
-
-function movePiece(piece){
-    //check floor collision. if no collision, increment up.
-    if(! piece.pieceComponents.some(pc => pc.posY >= boardInfo.pieceHeight - 1))
-        piece.pieceComponents.forEach(pc => pc.posY += 1);
 }
 
 function drawBackground(ctx){
