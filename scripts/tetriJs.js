@@ -7,12 +7,12 @@ class BoardInformation{
     pieceHeight = 20;
 }
 
-class Piece {
+class PieceComponent {
     posX = 0;
     posY = 0;
     color = "#FFFFFF";
 
-    drawSimplePiece = function(ctx, boardInfo){
+    drawPieceComponent = function(ctx, boardInfo){
         ctx.fillStyle = this.color;
         const drawDim = this.calculatePiecePixels(boardInfo);
         ctx.fillRect(drawDim.startX,drawDim.startY,drawDim.xIncrement,drawDim.yIncrement);
@@ -28,6 +28,14 @@ class Piece {
         return {startX, startY, xIncrement, yIncrement};
     }
 }
+
+class Piece {
+    pieceList = [];
+    drawPiece = function(ctx, boardInfo){
+        this.pieceList.forEach(p => p.drawPieceComponent(ctx, boardInfo))
+    }
+}
+
 
 //=============================================================
 
@@ -46,13 +54,13 @@ const boardInfo = new BoardInformation();
 boardInfo.maxX = gameWidth;
 boardInfo.maxY = gameHeight;
 
-let pieceArr = [];
+let activePiece = new Piece();
 for(let i = 0; i < 10; i++){
-    let p = new Piece();
+    let p = new PieceComponent();
     p.posX= i;
     p.posY = 0;
     p.color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
-    pieceArr.push(p);
+    activePiece.pieceList.push(p);
 }
 
 canvas.addEventListener('click', e => tick(), false);
@@ -62,8 +70,8 @@ stateLog();
 
 function tick(){
     drawBackground(context);
-    pieceArr.forEach(p => p.posY += 1);
-    pieceArr.forEach(piece => piece.drawSimplePiece(context, boardInfo));
+    activePiece.pieceList.forEach(p => p.posY += 1);
+    activePiece.pieceList.forEach(p => p.drawPieceComponent(context, boardInfo));
 }
 
 function drawBackground(ctx){
