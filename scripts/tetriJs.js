@@ -30,20 +30,83 @@ class PieceComponent {
 }
 
 class Piece {
-    pieceComponents = [];
+    pieceComponents = [[]];
     centerPoint = {x:0, y:0};
     drawPiece = function(ctx, boardInfo){
-        this.pieceComponents.forEach(p => p.drawPieceComponent(ctx, boardInfo))
+        this.pieceComponents.flat().forEach(p => p.drawPieceComponent(ctx, boardInfo));
+        console.log("====Draw Function=====");
+        console.log(`${this.pieceComponents[0][0].posX}, ${this.pieceComponents[0][0].posY}`);
+        console.log(`${this.pieceComponents[0][1].posX}, ${this.pieceComponents[0][1].posY}`);
+        console.log(`${this.pieceComponents[0][2].posX}, ${this.pieceComponents[0][2].posY}`);
+        console.log("=========");
     };
+
     moveDown = function(boardInfo){
-        if(! this.pieceComponents.some(pc => pc.posY >= boardInfo.pieceHeight - 1)){
-            this.pieceComponents.forEach(pc => pc.posY += 1);
+        if(! this.pieceComponents.flat().some(pc => pc.posY >= boardInfo.pieceHeight - 1)){
+            this.pieceComponents.flat().forEach(pc => pc.posY += 1);
             this.centerPoint.y += 1;
         }
     };
 
-    //to allow rotation, need to phrase the piece components in terms of a 2d array, instead of a list.
-    //then i can also have a center point defined or something, to calculate rotation
+    rotatePiece = function(){
+        let rotatedPieceComponents = [];
+        this.pieceComponents.forEach(row => rotatedPieceComponents.push(new Array(row.length).fill(new PieceComponent())));
+
+        let n = this.pieceComponents.length;
+        for(let i = 0; i < n; i++){
+            for(let j = n-1; j >= 0; j--){
+                rotatedPieceComponents[i][n-j-1] = this.pieceComponents[j][i]
+            }
+        }
+        console.log("====Original=====");
+        console.log(`${this.pieceComponents[0][0].posX}, ${this.pieceComponents[0][0].posY}`);
+        console.log(`${this.pieceComponents[0][1].posX}, ${this.pieceComponents[0][1].posY}`);
+        console.log(`${this.pieceComponents[0][2].posX}, ${this.pieceComponents[0][2].posY}`);
+        console.log("=========");
+        console.log("====New=====");
+        console.log(`${rotatedPieceComponents[0][0].posX}, ${rotatedPieceComponents[0][0].posY}`);
+        console.log(`${rotatedPieceComponents[0][1].posX}, ${rotatedPieceComponents[0][1].posY}`);
+        console.log(`${rotatedPieceComponents[0][2].posX}, ${rotatedPieceComponents[0][2].posY}`);
+        this.pieceComponents = rotatedPieceComponents;
+        console.log("=========");
+    }
+}
+
+class PieceGenerator {
+    static JUNK_PIECE_COMPONENT = function(){
+      const junk = new PieceComponent();
+      junk.posX = 2; junk.posY = -0;
+      return junk;
+    };
+
+    static T_BLOCK = function() {
+        const pc1 = new PieceComponent();
+        pc1.posY = 1; pc1.posX = 4;
+
+        const pc2 = new PieceComponent();
+        pc2.posY = 1; pc2.posX = 5;
+
+        const pc3 = new PieceComponent();
+        pc3.posY = 1; pc3.posX = 6;
+
+        const pc4 = new PieceComponent();
+        pc4.posY = 0; pc4.posX = 5;
+
+        const p = new Piece();
+        p.pieceComponents = [
+            new Array(3).fill(PieceGenerator.JUNK_PIECE_COMPONENT()),
+            new Array(3).fill(PieceGenerator.JUNK_PIECE_COMPONENT()),
+            new Array(3).fill(PieceGenerator.JUNK_PIECE_COMPONENT())
+        ];
+
+        p.centerPoint = {x:6,y:0};
+        p.pieceComponents[1][0] = pc1;
+        p.pieceComponents[1][1] = pc2;
+        p.pieceComponents[1][2] = pc3;
+        p.pieceComponents[0][1]= pc4;
+        p.pieceComponents.flat().forEach( pc => pc.color = "#ff0000");
+        return p;
+    }
 }
 
 
@@ -64,17 +127,24 @@ const boardInfo = new BoardInformation();
 boardInfo.maxX = gameWidth;
 boardInfo.maxY = gameHeight;
 
-let activePiece = new Piece();
-for(let i = 0; i < 10; i++){
-    let p = new PieceComponent();
-    p.posX= i;
-    p.posY = 0;
-    p.color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
-    activePiece.pieceComponents.push(p);
-}
-activePiece.pieceComponents[3].posY = -2;
+// let activePiece = new Piece();
+// for(let i = 0; i < 10; i++){
+//     let p = new PieceComponent();
+//     p.posX= i;
+//     p.posY = 0;
+//     p.color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+//     activePiece.pieceComponents.push(p);
+// }
+// activePiece.pieceComponents[3].posY = -2;
 
-canvas.addEventListener('click', e => {tick(); stateLog()}, false);
+let activePiece = PieceGenerator.T_BLOCK();
+// activePiece.rotatePiece();
+// activePiece.rotatePiece();
+tick();
+
+canvas.addEventListener('click', () => {activePiece.rotatePiece(0)});
+canvas.addEventListener('click', () => {tick(); stateLog()}, false);
+tick();
 stateLog();
 
 //===============================================================
@@ -99,7 +169,7 @@ function stateLog(){
     logString += (`Board PieceWidth = ${boardInfo.pieceWidth}\n`);
     logString += (`Active Piece Center = ${activePiece.centerPoint.x}, ${activePiece.centerPoint.y}\n`);
     logString += ("End Log\n");
-    console.log(logString);
+    // console.log(logString);
 }
 
 
