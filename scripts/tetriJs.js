@@ -35,7 +35,6 @@ class Piece {
     drawPiece = function(ctx, boardInfo){
         this.pieceComponents.forEach(p => p.drawPieceComponent(ctx, boardInfo))
     };
-
     moveDown = function(boardInfo){
         if(! this.pieceComponents.some(pc => pc.posY >= boardInfo.pieceHeight - 1)){
             this.pieceComponents.forEach(pc => pc.posY += 1);
@@ -44,7 +43,7 @@ class Piece {
     };
 
     //to allow rotation, need to phrase the piece components in terms of a 2d array, instead of a list.
-    //then i can also had a center point defined or something, to calculate rotation
+    //then i can also have a center point defined or something, to calculate rotation
 }
 
 
@@ -98,6 +97,7 @@ function stateLog(){
     logString += (`Board MaxY = ${boardInfo.maxY}\n`);
     logString += (`Board PieceHeight = ${boardInfo.pieceHeight}\n`);
     logString += (`Board PieceWidth = ${boardInfo.pieceWidth}\n`);
+    logString += (`Active Piece Center = ${activePiece.centerPoint.x}, ${activePiece.centerPoint.y}\n`);
     logString += ("End Log\n");
     console.log(logString);
 }
