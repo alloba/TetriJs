@@ -16,6 +16,7 @@ class Piece {
         new Array(3).fill(null)
     ];
     position = { x: 0, y: 0 }; // upper left of piece's grid
+    idleTicks = 0; //how many game ticks this piece has been unmodified (rotation/movement)
 
 
     constructor(board, blockShape) {
@@ -115,30 +116,47 @@ class Piece {
         }
     };
 
-    static proposeRotation(piece) {
-        const newPiece = Piece.copyPiece(piece);
+    rotate() {
+        //this logic is to rotate a matrix 90 degrees clockwise
+        let rotatedPiece = Piece.copyPiece(this);
         let rotatedPieceComponents = [];
-        for (let i = 0; i < piece.subPieces.length; i++)
-            rotatedPieceComponents.push(new Array(piece.subPieces.length).fill(null))
+        for (let i = 0; i < rotatedPiece.subPieces.length; i++)
+            rotatedPieceComponents.push(new Array(rotatedPiece.subPieces.length).fill(null))
 
-        let n = newPiece.subPieces.length;
+        let n = rotatedPiece.subPieces.length;
         for (let i = 0; i < n; i++) {
             for (let j = n - 1; j >= 0; j--) {
-                if (newPiece.subPieces[j][i] !== null) {
-                    rotatedPieceComponents[i][n - j - 1] = newPiece.subPieces[j][i];
+                if (rotatedPiece.subPieces[j][i] !== null) {
+                    rotatedPieceComponents[i][n - j - 1] = rotatedPiece.subPieces[j][i]; //fully ripped from the internet
                 }
             }
         }
-        newPiece.subPieces = rotatedPieceComponents;
-        return newPiece;
-    }
+        rotatedPiece.subPieces = rotatedPieceComponents;
 
-    rotate() {
-        const originalPiece = Piece.copyPiece(this);
-        let rotatedPiece = Piece.proposeRotation(originalPiece);
-
-        while(Piece.detectCollision(rotatedPiece)){
-            rotatedPiece.moveUp()
+        //if it crosses the edge of the board after rotation, move it inwards. 
+        // if it hits something on the board, just push it upwards until it fits
+        let horizontalCollision = false;
+        while (Piece.detectCollision(rotatedPiece)) {
+            //check each subPiece and see if it is horizontally out of bounds.
+            //todo: i feel like this can be bundled in the detect collision method somehow, with a return value.
+                //maybe the detect collision method would return a vector describing the global position of the item that is out of bounds
+                //fixme: yeah i think the above is a good idea for later on. too lazy at the moment. 
+            for(let i = 0; i < rotatedPiece.subPieces.length; i++){
+                for(let j = 0; j < rotatedPiece.subPieces.length; j++){
+                    if(j + rotatedPiece.position.x < 0){
+                        rotatedPiece.position.x += 1;
+                        horizontalCollision = true;
+                        break;
+                    }
+                    else if (j + rotatedPiece.position.x > rotatedPiece.board.unitSize.width - 1){
+                            rotatedPiece.position.x -= 1;
+                            horizontalCollision = true;
+                            break;
+                        }
+                }
+            }
+            if(! horizontalCollision) 
+                rotatedPiece.moveUp(); 
         }
 
         if (!Piece.detectCollision(rotatedPiece)) {
@@ -147,46 +165,32 @@ class Piece {
         }
     }
 
-
-
-    proposeMoveDown() {
-        const newPiece = Piece.copyPiece(this);
-        newPiece.position.y = this.position.y + 1;
-        return newPiece;
-    }
-
     moveDown() {
-        let newPiece = this.proposeMoveDown();
+        let newPiece = Piece.copyPiece(this);//this.proposeMoveDown();
+        newPiece.position.y += 1;
+
         if (!Piece.detectCollision(newPiece)) {
             this.subPieces = newPiece.subPieces;
             this.position = newPiece.position;
+            return true;
         }
+        return false;
     };
 
-    proposeMoveHorizontal(direction) {
-        if (direction !== -1 && direction !== 1)
-            console.trace("invalid value passed to proposeMoveHorizontal. Must be either 1 or -1");
-        const newPiece = Piece.copyPiece(this);
-        newPiece.position.x += direction;
-        return newPiece;
-    }
-
     moveHorizontal(direction) {
-        const newPiece = this.proposeMoveHorizontal(direction);
-        if (!Piece.detectCollision(newPiece))
+        const newPiece = Piece.copyPiece(this);//this.proposeMoveHorizontal(direction);
+        newPiece.position.x += direction;
+        if (!Piece.detectCollision(newPiece)){
             this.position = newPiece.position;
-    }
-
-    proposeMoveUp() {
-        const newPiece = Piece.copyPiece(this);
-        newPiece.position.y -= 1;
-        return newPiece;
+            return true;
+        }
+        return false;
     }
 
     moveUp() {
         let newPiece = Piece.copyPiece(this);
         do {
-            newPiece = newPiece.proposeMoveUp();
+            newPiece.position.y -= 1;
         }
         while (Piece.detectCollision(newPiece));
 
@@ -293,14 +297,17 @@ let context = canvas.getContext("2d");
 let board = new Board(context, 10, 20);
 const activePiece = new Piece(board, Piece.Z_BLOCK);
 
-
-board.draw();
-activePiece.rotate();
-activePiece.rotate();
 board.grid[8][4] = "#FFF";
-// canvas.addEventListener('click', function () {
-//     tick();
-// });
+board.grid[7][3] = "#FFF";
+board.grid[7][5] = "#FFF";
+board.grid[6][2] = "#FFF";
+board.grid[5][3] = "#FFF";
+board.draw();
+activePiece.draw();
+
+canvas.addEventListener('click', function () {
+    tick();
+});
 window.addEventListener('keydown', arrowKeysListener);
 
 
@@ -343,4 +350,9 @@ function arrowKeysListener(e) {
 
     }
     draw();
+    logPieceState();
+}
+
+function logPieceState(){
+    console.log(activePiece.position);
 }
