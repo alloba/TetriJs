@@ -24,7 +24,7 @@ class Piece {
             throw ("No board provided instantiating new Piece object");
         this.board = board;
 
-        this.position.x = Math.floor(board.unitSize.width/2) - 2;
+        this.position.x = Math.floor(board.unitSize.width / 2) - 2;
         this.position.y = -2;
 
         switch (blockShape) {
@@ -148,24 +148,24 @@ class Piece {
         while (Piece.detectCollision(rotatedPiece)) {
             //check each subPiece and see if it is horizontally out of bounds.
             //todo: i feel like this can be bundled in the detect collision method somehow, with a return value.
-                //maybe the detect collision method would return a vector describing the global position of the item that is out of bounds
-                //fixme: yeah i think the above is a good idea for later on. too lazy at the moment. 
-            for(let i = 0; i < rotatedPiece.subPieces.length; i++){
-                for(let j = 0; j < rotatedPiece.subPieces.length; j++){
-                    if(j + rotatedPiece.position.x < 0){
+            //maybe the detect collision method would return a vector describing the global position of the item that is out of bounds
+            //fixme: yeah i think the above is a good idea for later on. too lazy at the moment. 
+            for (let i = 0; i < rotatedPiece.subPieces.length; i++) {
+                for (let j = 0; j < rotatedPiece.subPieces.length; j++) {
+                    if (j + rotatedPiece.position.x < 0) {
                         rotatedPiece.position.x += 1;
                         horizontalCollision = true;
                         break;
                     }
-                    else if (j + rotatedPiece.position.x > rotatedPiece.board.unitSize.width - 1){
-                            rotatedPiece.position.x -= 1;
-                            horizontalCollision = true;
-                            break;
-                        }
+                    else if (j + rotatedPiece.position.x > rotatedPiece.board.unitSize.width - 1) {
+                        rotatedPiece.position.x -= 1;
+                        horizontalCollision = true;
+                        break;
+                    }
                 }
             }
-            if(! horizontalCollision) 
-                rotatedPiece.moveUp(); 
+            if (!horizontalCollision)
+                rotatedPiece.moveUp();
         }
 
         this.subPieces = rotatedPiece.subPieces;
@@ -191,7 +191,7 @@ class Piece {
         this.idleTicks += 1;
         const newPiece = Piece.copyPiece(this);//this.proposeMoveHorizontal(direction);
         newPiece.position.x += direction;
-        if (!Piece.detectCollision(newPiece)){
+        if (!Piece.detectCollision(newPiece)) {
             this.position = newPiece.position;
             this.idleTicks = 0;
             return true;
@@ -265,7 +265,7 @@ class Board {
     grid = null;
     context = null;
 
-    constructor(context, width, height) {
+    constructor(context, width, height, actualWidth, actualHeight) {
         if (typeof context !== "object")
             throw ("Missing canvas context provided to Board object");
         if (width !== null && height !== null) {
@@ -278,6 +278,9 @@ class Board {
                 this.grid[i].push(null)
         }
 
+        if (actualWidth !== undefined && actualHeight !== undefined) {
+            this.drawSize = { x: actualWidth, y: actualHeight };
+        }
         this.context = context;
     }
 
@@ -296,41 +299,41 @@ class Board {
                     this.context.fillStyle = this.grid[i][j];
                     this.context.fillRect(pieceDraw * j, pieceDraw * i, pieceDraw, pieceDraw);
                     this.context.strokeRect(pieceDraw * j, pieceDraw * i, pieceDraw, pieceDraw);
-                    this.context.fillStyle = "#FFF";
-                    this.context.fillText(`(${j}, ${i})`,pieceDraw * j + 5, pieceDraw * i + 20);
+                    // this.context.fillStyle = "#FFF";
+                    // this.context.fillText(`(${j}, ${i})`, pieceDraw * j + 5, pieceDraw * i + 20);
                 }
             }
         }
     }
 
-    addPiece(piece){
-        for(let i = 0; i < piece.subPieces.length; i++){
-            for(let j = 0; j < piece.subPieces.length; j++){
-                if(piece.subPieces[i][j] !== null){
+    addPiece(piece) {
+        for (let i = 0; i < piece.subPieces.length; i++) {
+            for (let j = 0; j < piece.subPieces.length; j++) {
+                if (piece.subPieces[i][j] !== null) {
                     this.grid[i + piece.position.y][j + piece.position.x] = piece.subPieces[i][j];
                 }
             }
         }
     }
 
-    clearRows(){
-        for(let i = 0; i < this.grid.length; i++){
+    clearRows() {
+        for (let i = 0; i < this.grid.length; i++) {
             let fullRow = true;
-            for(let j = 0; j < this.grid[0].length; j++){
-                if(this.grid[i][j] == null){
+            for (let j = 0; j < this.grid[0].length; j++) {
+                if (this.grid[i][j] == null) {
                     fullRow = false;
                 }
             }
-            if(fullRow){
+            if (fullRow) {
                 //zero out current row
-                for(let z = 0; z < this.grid[i].length; z++)
+                for (let z = 0; z < this.grid[i].length; z++)
                     this.grid[i][z] = null;
 
                 //shift everthing above current row downwards
-                for(let z = i-1; z > 0; z--){
-                    for(let cell = 0; cell<this.grid[0].length; cell ++){
-                        this.grid[z+1][cell] = this.grid[z][cell];
-                        this.grid[z][cell] = this.grid[z-1][cell]
+                for (let z = i - 1; z > 0; z--) {
+                    for (let cell = 0; cell < this.grid[0].length; cell++) {
+                        this.grid[z + 1][cell] = this.grid[z][cell];
+                        this.grid[z][cell] = this.grid[z - 1][cell]
                     }
                 }
             }
@@ -343,9 +346,14 @@ class Board {
 let canvas = document.querySelector('#gameContainer');
 if (canvas === null)
     throw ("Unable to locate the 'gameContainer' object on page.");
+let windowSize = { x: 800, y: 800 };
+canvas.width = windowSize.x; canvas.height = windowSize.y;
+
+let boardWidth = 40;
+let boardHeight = 40;
 
 let context = canvas.getContext("2d");
-let board = new Board(context, 10, 20);
+let board = new Board(context, boardWidth, boardHeight, windowSize.x, windowSize.y);
 let activePiece = getRandomPiece();
 let gameSpeedMs = 400;
 
@@ -365,23 +373,25 @@ function tick() {
     board.draw();
     activePiece.draw();
 
-    if(activePiece.idleTicks > 2){
-        for(let i = 0; i < activePiece.subPieces.length; i++)
-            for(let j = 0; j < activePiece.subPieces.length; j++){
-                if(activePiece.subPieces[i][j] !== null && activePiece.position.y - i + 1 < 0 ){
+    renderGhost();
+
+    if (activePiece.idleTicks > 2) {
+        for (let i = 0; i < activePiece.subPieces.length; i++)
+            for (let j = 0; j < activePiece.subPieces.length; j++) {
+                if (activePiece.subPieces[i][j] !== null && activePiece.position.y - i + 1 < 0) {
                     resetGame();
                     return;
                 }
             }
-        
+
         board.addPiece(activePiece);
         board.clearRows();
-        
+
         activePiece = getRandomPiece();
         activePiece.draw();
     }
 
-    logState();
+    // logState();
 }
 
 function draw() {
@@ -399,18 +409,16 @@ function arrowKeysListener(e) {
             console.log("right");
             activePiece.moveHorizontal(1);
             break;
-        case 38: //up
+        case 32: //spacebar
             console.log("up");
-            new Array(60).fill("").forEach(blank =>activePiece.moveDown());
+            new Array(board.grid.length).fill("").forEach(blank => activePiece.moveDown());
             tick();
             break;
         case 40: //down
             console.log("down");
-            // activePiece.moveDown();
             tick();
             break;
-        case 32: //spacebar
-            console.log("spacebar -- rotate");
+        case 38: //up
             activePiece.rotate();
             break;
         default:
@@ -418,21 +426,29 @@ function arrowKeysListener(e) {
 
     }
     draw();
-    logState();
+    renderGhost();
+    // logState();
 }
 
-function logState(){
+function logState() {
     let logString = ``;
     logString += `ActivePiece position: X ${activePiece.position.x} || Y ${activePiece.position.y}\n`;
     logString += `ActivePiece idleTicks: ${activePiece.idleTicks}\n`;
     logString += `=======\n`;
     console.log(logString);
-    console.log(board.grid);
 }
 
-function resetGame(){
+function resetGame() {
     board = new Board(context, 10, 20);
     activePiece = new Piece(board, Piece.Z_BLOCK);
 }
 
- function getRandomPiece() {return new Piece(board, Math.floor(Math.random()*7));}
+function getRandomPiece() { return new Piece(board, Math.floor(Math.random() * 7)); }
+
+function renderGhost() {
+    let ghostPiece = Piece.copyPiece(activePiece);
+    new Array(board.grid.length).fill("").forEach(blank => ghostPiece.moveDown());
+    context.globalAlpha = 0.4;
+    ghostPiece.draw();
+    context.globalAlpha = 1.0;
+}
