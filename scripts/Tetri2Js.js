@@ -1,5 +1,12 @@
 class Piece {
     static T_BLOCK = "T_BLOCK";
+    static J_BLOCK = "J_BLOCK";
+    static L_BLOCK = "L_BLOCK";
+    static O_BLOCK = "O_BLOCK";
+    static S_BLOCK = "S_BLOCK";
+    static Z_BLOCK = "Z_BLOCK";
+    static I_BLOCK = "I_BLOCK";
+
     static BLOCK_TEMPLATE = "BLOCK_TEMPLATE";
     assignedBlockShape = "";
     board = null;
@@ -25,6 +32,65 @@ class Piece {
                 this.assignedBlockShape = Piece.T_BLOCK;
                 break;
             }
+            case Piece.J_BLOCK: {
+                this.subPieces[0][0] = "#FFF000";
+                this.subPieces[1][0] = "#FFF000";
+                this.subPieces[1][1] = "#FFF000";
+                this.subPieces[1][2] = "#FFF000";
+                this.assignedBlockShape = Piece.J_BLOCK;
+                break;
+            }
+            case Piece.L_BLOCK: {
+                this.subPieces[0][2] = "#FFF000";
+                this.subPieces[1][0] = "#FFF000";
+                this.subPieces[1][1] = "#FFF000";
+                this.subPieces[1][2] = "#FFF000";
+                this.assignedBlockShape = Piece.L_BLOCK;
+                break;
+            }
+            case Piece.O_BLOCK: {
+                this.subPieces = [
+                    new Array(2).fill(null),
+                    new Array(2).fill(null)
+                ];
+                this.subPieces[0][0] = "#FFF000";
+                this.subPieces[1][0] = "#FFF000";
+                this.subPieces[1][1] = "#FFF000";
+                this.subPieces[0][1] = "#FFF000";
+                this.assignedBlockShape = Piece.O_BLOCK;
+                break;
+            }
+            case Piece.S_BLOCK: {
+                this.subPieces[0][1] = "#FFF000";
+                this.subPieces[0][2] = "#FFF000";
+                this.subPieces[1][0] = "#FFF000";
+                this.subPieces[1][1] = "#FFF000";
+                this.assignedBlockShape = Piece.S_BLOCK;
+                break;
+            }
+            case Piece.Z_BLOCK: {
+                this.subPieces[0][0] = "#FFF000";
+                this.subPieces[0][1] = "#FFF000";
+                this.subPieces[1][1] = "#FFF000";
+                this.subPieces[1][2] = "#FFF000";
+                this.assignedBlockShape = Piece.Z_BLOCK;
+                break;
+            }
+            case Piece.I_BLOCK: {
+                this.subPieces = [
+                    new Array(4).fill(null),
+                    new Array(4).fill(null),
+                    new Array(4).fill(null),
+                    new Array(4).fill(null)
+                ];
+                this.subPieces[1][0] = "#FFF000";
+                this.subPieces[1][1] = "#FFF000";
+                this.subPieces[1][2] = "#FFF000";
+                this.subPieces[1][3] = "#FFF000";
+                this.assignedBlockShape = Piece.I_BLOCK;
+                break;
+            }
+
             case Piece.BLOCK_TEMPLATE: {
                 this.assignedBlockShape = Piece.BLOCK_TEMPLATE;
                 break;
@@ -35,7 +101,6 @@ class Piece {
     }
 
     draw() {
-        console.log(this.position);
         let drawDisplace = this.board.drawSize.x / this.board.unitSize.width;
         for (let i = 0; i < this.subPieces.length; i++) {
             for (let j = 0; j < this.subPieces.length; j++) {
@@ -52,11 +117,9 @@ class Piece {
 
     proposeRotation() {
         const newPiece = Piece.copyPiece(this.board, this);
-        let rotatedPieceComponents = [
-            new Array(newPiece.subPieces.length).fill(null),
-            new Array(newPiece.subPieces.length).fill(null),
-            new Array(newPiece.subPieces.length).fill(null)
-        ];
+        let rotatedPieceComponents = [];
+        for(let i = 0; i < this.subPieces.length; i++)
+            rotatedPieceComponents.push(new Array(this.subPieces.length).fill(null))
 
         let n = newPiece.subPieces.length;
         for (let i = 0; i < n; i++) {
@@ -102,8 +165,6 @@ class Piece {
 
     moveHorizontal(direction) {
         const newPiece = this.proposeMoveHorizontal(direction);
-        console.log(Piece.detectCollision(this.board, newPiece));
-
         if (!Piece.detectCollision(this.board, newPiece))
             this.position = newPiece.position;
     }
@@ -116,13 +177,10 @@ class Piece {
                 if (piece.subPieces[i][j] !== null) {
                     //out of bounds vertically
                     if (i + piece.position.y > board.unitSize.height - 1) {
-                        console.log(i + piece.position.y);
-                        console.log(piece.subPieces[i][j]);
                         return true;
                     }
                     //out of bounds horizontally
                     if (j + piece.position.x > board.unitSize.width - 1 || j + piece.position.x < 0) {
-                        console.log(j + piece.position.x);
                         return true;
                     }
                     //overlapping any piece on game board.
@@ -144,7 +202,7 @@ class Piece {
         let newPiece = new Piece(board, Piece.BLOCK_TEMPLATE);
         newPiece.subPieces = [];
         for (let i = 0; i < piece.subPieces.length; i++)
-            newPiece.subPieces.push(new Array(3).fill(""))
+            newPiece.subPieces.push(new Array(piece.subPieces.length).fill(null))
 
         newPiece.position = {x: piece.position.x, y: piece.position.y};
 
@@ -189,8 +247,6 @@ class Board {
         for (let i = 0; i < this.grid.length; i++) {
             for (let j = 0; j < this.grid[0].length; j++) {
                 if(this.grid[i][j] !== null) {
-                    console.log(pieceDraw * j + "__" + pieceDraw * i);
-                    console.log(pieceDraw * (j+1) + "__" + pieceDraw * (i+1));
                     this.context.fillStyle = this.grid[i][j];
                     this.context.fillRect(pieceDraw * j, pieceDraw * i, pieceDraw, pieceDraw)
                 }
@@ -207,7 +263,7 @@ if (canvas === null)
 
 let context = canvas.getContext("2d");
 let board = new Board(context, 10, 20);
-const activePiece = new Piece(board, Piece.T_BLOCK);
+const activePiece = new Piece(board, Piece.Z_BLOCK);
 
 
 board.draw();
