@@ -1,11 +1,11 @@
 class Piece {
-    static T_BLOCK = "T_BLOCK";
-    static J_BLOCK = "J_BLOCK";
-    static L_BLOCK = "L_BLOCK";
-    static O_BLOCK = "O_BLOCK";
-    static S_BLOCK = "S_BLOCK";
-    static Z_BLOCK = "Z_BLOCK";
-    static I_BLOCK = "I_BLOCK";
+    static T_BLOCK = 0;
+    static J_BLOCK = 1;
+    static L_BLOCK = 2;
+    static O_BLOCK = 3;
+    static S_BLOCK = 4;
+    static Z_BLOCK = 5;
+    static I_BLOCK = 6;
 
     static BLOCK_TEMPLATE = "BLOCK_TEMPLATE";
     assignedBlockShape = "";
@@ -24,28 +24,31 @@ class Piece {
             throw ("No board provided instantiating new Piece object");
         this.board = board;
 
+        this.position.x = Math.floor(board.unitSize.width/2) - 2;
+        this.position.y = -2;
+
         switch (blockShape) {
             case Piece.T_BLOCK: {
-                this.subPieces[0][1] = "#FFF000";
-                this.subPieces[1][0] = "#FFF000";
-                this.subPieces[1][1] = "#FFF000";
-                this.subPieces[1][2] = "#FFF000";
+                this.subPieces[0][1] = "#990099";
+                this.subPieces[1][0] = "#990099";
+                this.subPieces[1][1] = "#990099";
+                this.subPieces[1][2] = "#990099";
                 this.assignedBlockShape = Piece.T_BLOCK;
                 break;
             }
             case Piece.J_BLOCK: {
-                this.subPieces[0][0] = "#FFF000";
-                this.subPieces[1][0] = "#FFF000";
-                this.subPieces[1][1] = "#FFF000";
-                this.subPieces[1][2] = "#FFF000";
+                this.subPieces[0][0] = "#0000ff";
+                this.subPieces[1][0] = "#0000ff";
+                this.subPieces[1][1] = "#0000ff";
+                this.subPieces[1][2] = "#0000ff";
                 this.assignedBlockShape = Piece.J_BLOCK;
                 break;
             }
             case Piece.L_BLOCK: {
-                this.subPieces[0][2] = "#FFF000";
-                this.subPieces[1][0] = "#FFF000";
-                this.subPieces[1][1] = "#FFF000";
-                this.subPieces[1][2] = "#FFF000";
+                this.subPieces[0][2] = "#ff6600";
+                this.subPieces[1][0] = "#ff6600";
+                this.subPieces[1][1] = "#ff6600";
+                this.subPieces[1][2] = "#ff6600";
                 this.assignedBlockShape = Piece.L_BLOCK;
                 break;
             }
@@ -54,26 +57,26 @@ class Piece {
                     new Array(2).fill(null),
                     new Array(2).fill(null)
                 ];
-                this.subPieces[0][0] = "#FFF000";
-                this.subPieces[1][0] = "#FFF000";
-                this.subPieces[1][1] = "#FFF000";
-                this.subPieces[0][1] = "#FFF000";
+                this.subPieces[0][0] = "#ffff00";
+                this.subPieces[1][0] = "#ffff00";
+                this.subPieces[1][1] = "#ffff00";
+                this.subPieces[0][1] = "#ffff00";
                 this.assignedBlockShape = Piece.O_BLOCK;
                 break;
             }
             case Piece.S_BLOCK: {
-                this.subPieces[0][1] = "#FFF000";
-                this.subPieces[0][2] = "#FFF000";
-                this.subPieces[1][0] = "#FFF000";
-                this.subPieces[1][1] = "#FFF000";
+                this.subPieces[0][1] = "#00cc00";
+                this.subPieces[0][2] = "#00cc00";
+                this.subPieces[1][0] = "#00cc00";
+                this.subPieces[1][1] = "#00cc00";
                 this.assignedBlockShape = Piece.S_BLOCK;
                 break;
             }
             case Piece.Z_BLOCK: {
-                this.subPieces[0][0] = "#FFF000";
-                this.subPieces[0][1] = "#FFF000";
-                this.subPieces[1][1] = "#FFF000";
-                this.subPieces[1][2] = "#FFF000";
+                this.subPieces[0][0] = "#ff0000";
+                this.subPieces[0][1] = "#ff0000";
+                this.subPieces[1][1] = "#ff0000";
+                this.subPieces[1][2] = "#ff0000";
                 this.assignedBlockShape = Piece.Z_BLOCK;
                 break;
             }
@@ -84,10 +87,10 @@ class Piece {
                     new Array(4).fill(null),
                     new Array(4).fill(null)
                 ];
-                this.subPieces[1][0] = "#FFF000";
-                this.subPieces[1][1] = "#FFF000";
-                this.subPieces[1][2] = "#FFF000";
-                this.subPieces[1][3] = "#FFF000";
+                this.subPieces[1][0] = "#00FFFF";
+                this.subPieces[1][1] = "#00FFFF";
+                this.subPieces[1][2] = "#00FFFF";
+                this.subPieces[1][3] = "#00FFFF";
                 this.assignedBlockShape = Piece.I_BLOCK;
                 break;
             }
@@ -159,29 +162,32 @@ class Piece {
                 rotatedPiece.moveUp(); 
         }
 
-        if (!Piece.detectCollision(rotatedPiece)) {
-            this.subPieces = rotatedPiece.subPieces;
-            this.position = rotatedPiece.position;
-        }
+        this.subPieces = rotatedPiece.subPieces;
+        this.position = rotatedPiece.position;
+        this.idleTicks = 0;
     }
 
     moveDown() {
+        this.idleTicks += 1;
         let newPiece = Piece.copyPiece(this);//this.proposeMoveDown();
         newPiece.position.y += 1;
 
         if (!Piece.detectCollision(newPiece)) {
             this.subPieces = newPiece.subPieces;
             this.position = newPiece.position;
+            this.idleTicks = 0;
             return true;
         }
         return false;
     };
 
     moveHorizontal(direction) {
+        this.idleTicks += 1;
         const newPiece = Piece.copyPiece(this);//this.proposeMoveHorizontal(direction);
         newPiece.position.x += direction;
         if (!Piece.detectCollision(newPiece)){
             this.position = newPiece.position;
+            this.idleTicks = 0;
             return true;
         }
         return false;
@@ -280,7 +286,43 @@ class Board {
             for (let j = 0; j < this.grid[0].length; j++) {
                 if (this.grid[i][j] !== null) {
                     this.context.fillStyle = this.grid[i][j];
-                    this.context.fillRect(pieceDraw * j, pieceDraw * i, pieceDraw, pieceDraw)
+                    this.context.fillRect(pieceDraw * j, pieceDraw * i, pieceDraw, pieceDraw);
+                    this.context.fillStyle = "#FFF";
+                    this.context.fillText(`(${j}, ${i})`,pieceDraw * j + 5, pieceDraw * i + 20);
+                }
+            }
+        }
+    }
+
+    addPiece(piece){
+        for(let i = 0; i < piece.subPieces.length; i++){
+            for(let j = 0; j < piece.subPieces.length; j++){
+                if(piece.subPieces[i][j] !== null){
+                    this.grid[i + piece.position.y][j + piece.position.x] = piece.subPieces[i][j];
+                }
+            }
+        }
+    }
+
+    clearRows(){
+        for(let i = 0; i < this.grid.length; i++){
+            let fullRow = true;
+            for(let j = 0; j < this.grid[0].length; j++){
+                if(this.grid[i][j] == null){
+                    fullRow = false;
+                }
+            }
+            if(fullRow){
+                //zero out current row
+                for(let z = 0; z < this.grid[i].length; z++)
+                    this.grid[i][z] = null;
+
+                //shift everthing above current row downwards
+                for(let z = i-1; z > 0; z--){
+                    for(let cell = 0; cell<this.grid[0].length; cell ++){
+                        this.grid[z+1][cell] = this.grid[z][cell];
+                        this.grid[z][cell] = this.grid[z-1][cell]
+                    }
                 }
             }
         }
@@ -295,13 +337,15 @@ if (canvas === null)
 
 let context = canvas.getContext("2d");
 let board = new Board(context, 10, 20);
-const activePiece = new Piece(board, Piece.Z_BLOCK);
+let activePiece = new Piece(board, Piece.Z_BLOCK);
 
-board.grid[8][4] = "#FFF";
-board.grid[7][3] = "#FFF";
-board.grid[7][5] = "#FFF";
-board.grid[6][2] = "#FFF";
-board.grid[5][3] = "#FFF";
+// board.grid[8][4] = "#FFF";
+// board.grid[8][1] = "#FFF";
+// board.grid[8][0] = "#FFF";
+// board.grid[8][3] = "#FFF";
+// board.grid[8][5] = "#FFF";
+// board.grid[8][2] = "#FFF";
+// board.grid[8][6] = "#FFF";
 board.draw();
 activePiece.draw();
 
@@ -316,6 +360,15 @@ function tick() {
     activePiece.moveDown();
     board.draw();
     activePiece.draw();
+
+    if(activePiece.idleTicks > 2){
+        board.addPiece(activePiece);
+        board.clearRows();
+        activePiece = new Piece(board, Math.floor(Math.random()*7));
+        activePiece.draw();
+    }
+
+    logState();
 }
 
 function draw() {
@@ -339,7 +392,8 @@ function arrowKeysListener(e) {
             break;
         case 40: //down
             console.log("down");
-            activePiece.moveDown();
+            // activePiece.moveDown();
+            tick();
             break;
         case 32: //spacebar
             console.log("spacebar -- rotate");
@@ -350,9 +404,14 @@ function arrowKeysListener(e) {
 
     }
     draw();
-    logPieceState();
+    logState();
 }
 
-function logPieceState(){
-    console.log(activePiece.position);
+function logState(){
+    let logString = ``;
+    logString += `ActivePiece position: X ${activePiece.position.x} || Y ${activePiece.position.y}\n`;
+    logString += `ActivePiece idleTicks: ${activePiece.idleTicks}\n`;
+    logString += `=======\n`;
+    console.log(logString);
+    console.log(board);
 }
