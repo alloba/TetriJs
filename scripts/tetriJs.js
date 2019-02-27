@@ -402,28 +402,21 @@ function draw() {
 function arrowKeysListener(e) {
     switch (e.keyCode) {
         case 37://left
-            console.log("left");
             activePiece.moveHorizontal(-1);
             break;
         case 39: //right
-            console.log("right");
             activePiece.moveHorizontal(1);
             break;
         case 32: //spacebar
-            console.log("up");
             new Array(board.grid.length).fill("").forEach(blank => activePiece.moveDown());
             tick();
             break;
         case 40: //down
-            console.log("down");
             tick();
             break;
         case 38: //up
             activePiece.rotate();
             break;
-        default:
-            console.log(`Code ${e.keyCode} not registered`)
-
     }
     draw();
     renderGhost();
@@ -439,8 +432,8 @@ function logState() {
 }
 
 function resetGame() {
-    board = new Board(context, 10, 20);
-    activePiece = new Piece(board, Piece.Z_BLOCK);
+    board = new Board(context, boardWidth, boardHeight, windowSize.x, windowSize.y);
+    activePiece = getRandomPiece();
 }
 
 function getRandomPiece() { return new Piece(board, Math.floor(Math.random() * 7)); }
