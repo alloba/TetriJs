@@ -113,7 +113,13 @@ class Piece {
                     this.board.context.fillRect(
                         drawDisplace * (j + this.position.x),
                         drawDisplace * (i + this.position.y),
-                        drawDisplace, drawDisplace)
+                        drawDisplace, drawDisplace
+                    );
+                    this.board.context.strokeRect(
+                        drawDisplace * (j + this.position.x),
+                        drawDisplace * (i + this.position.y),
+                        drawDisplace, drawDisplace
+                    );
                 }
             }
         }
@@ -284,9 +290,12 @@ class Board {
         const pieceDraw = this.drawSize.x / this.unitSize.width;
         for (let i = 0; i < this.grid.length; i++) {
             for (let j = 0; j < this.grid[0].length; j++) {
+                this.context.strokeStyle = 'grey';
+                this.context.strokeRect(pieceDraw * j, pieceDraw * i, pieceDraw, pieceDraw);
                 if (this.grid[i][j] !== null) {
                     this.context.fillStyle = this.grid[i][j];
                     this.context.fillRect(pieceDraw * j, pieceDraw * i, pieceDraw, pieceDraw);
+                    this.context.strokeRect(pieceDraw * j, pieceDraw * i, pieceDraw, pieceDraw);
                     this.context.fillStyle = "#FFF";
                     this.context.fillText(`(${j}, ${i})`,pieceDraw * j + 5, pieceDraw * i + 20);
                 }
@@ -337,15 +346,9 @@ if (canvas === null)
 
 let context = canvas.getContext("2d");
 let board = new Board(context, 10, 20);
-let activePiece = new Piece(board, Piece.Z_BLOCK);
+let activePiece = getRandomPiece();
+let gameSpeedMs = 400;
 
-// board.grid[8][4] = "#FFF";
-// board.grid[8][1] = "#FFF";
-// board.grid[8][0] = "#FFF";
-// board.grid[8][3] = "#FFF";
-// board.grid[8][5] = "#FFF";
-// board.grid[8][2] = "#FFF";
-// board.grid[8][6] = "#FFF";
 board.draw();
 activePiece.draw();
 
@@ -353,6 +356,7 @@ canvas.addEventListener('click', function () {
     tick();
 });
 window.addEventListener('keydown', arrowKeysListener);
+window.setInterval(tick, gameSpeedMs);
 
 
 //========================================================================
@@ -362,9 +366,18 @@ function tick() {
     activePiece.draw();
 
     if(activePiece.idleTicks > 2){
+        for(let i = 0; i < activePiece.subPieces.length; i++)
+            for(let j = 0; j < activePiece.subPieces.length; j++){
+                if(activePiece.subPieces[i][j] !== null && activePiece.position.y - i + 1 < 0 ){
+                    resetGame();
+                    return;
+                }
+            }
+        
         board.addPiece(activePiece);
         board.clearRows();
-        activePiece = new Piece(board, Math.floor(Math.random()*7));
+        
+        activePiece = getRandomPiece();
         activePiece.draw();
     }
 
@@ -388,7 +401,8 @@ function arrowKeysListener(e) {
             break;
         case 38: //up
             console.log("up");
-            activePiece.moveUp();
+            new Array(60).fill("").forEach(blank =>activePiece.moveDown());
+            tick();
             break;
         case 40: //down
             console.log("down");
@@ -413,5 +427,12 @@ function logState(){
     logString += `ActivePiece idleTicks: ${activePiece.idleTicks}\n`;
     logString += `=======\n`;
     console.log(logString);
-    console.log(board);
+    console.log(board.grid);
 }
+
+function resetGame(){
+    board = new Board(context, 10, 20);
+    activePiece = new Piece(board, Piece.Z_BLOCK);
+}
+
+ function getRandomPiece() {return new Piece(board, Math.floor(Math.random()*7));}
